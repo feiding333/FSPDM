@@ -1,1 +1,3 @@
+useDynLib(FSPDM)         # Change me! packagename should be replaced with your package's name
+importFrom(Rcpp, evalCpp)
 exportPattern("^[[:alpha:]]+")
