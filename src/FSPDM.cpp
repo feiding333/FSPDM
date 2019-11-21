@@ -82,3 +82,62 @@ double ObjGradient::objfunc(){
 
   return s;
 }
+
+// gradient beta
+vec ObjGradient::gradient_beta(){
+  vec gbeta(m*r*k);
+  vec vec_s;
+  mat tmpLn;
+  mat tmpDn;
+  mat IdentityMm = eye<mat>(m,m);
+  mat IdentityMr = eye<mat>(r,r);
+  mat tmp_cholM_this;
+  mat comM;
+  mat tmpEn;
+
+  if(sigma20 != 100000){
+
+    for (int i=0; i < N; i++) {
+      tmp_cholM_this = sigma2*IdentityMr + (C.at(i).t()*BtB.at(i)*C.at(i));
+      tmpLn = chol(tmp_cholM_this, "lower");
+      // get D_n
+      tmpDn = solve(tmpLn,C.at(i).t());
+      comM = IdentityMm - BtB.at(i)*tmpDn.t()*tmpDn;
+      tmpEn = comM*(Btx.at(i) - BtH.at(i)*theta);
+      partialC.at(i) = -2*pow(sigma2,-2)*tmpEn*tmpEn.t()*C.at(i)+ 2*pow(sigma2,-1)*comM*BtB.at(i)*C.at(i);
+    }
+
+  }else{
+    // get the current \partial L \partial C_n
+    for (int i=0; i < N; i++) {
+      tmp_cholM_this = IdentityMr + (C.at(i).t()*BtAinvB.at(i)*C.at(i));
+      tmpLn = chol(tmp_cholM_this, "lower");
+      // get D_n
+      tmpDn = solve(tmpLn,C.at(i).t());
+      comM = IdentityMm - BtAinvB.at(i)*tmpDn.t()*tmpDn;
+      tmpEn = comM*(BtAinvx.at(i) - BtAinvH.at(i)*theta);
+      partialC.at(i) = -2*tmpEn*tmpEn.t()*C.at(i) + 2*comM*BtAinvB.at(i)*C.at(i);
+    }
+  }
+
+
+  // get the gradient of whole beta
+  uvec sub_loc = zeros<uvec>(k);
+
+  for (int q = 0; q < r ; q++) {
+
+    for (int p = 0; p < m; p++) {
+      sub_loc =  regspace<uvec>(q*m*k+ p*k,q*m*k+ p*k +(k-1));
+      vec_s = zeros<vec>(k);
+
+      for (int i = 0; i < N; i++) {
+
+        vec_s = vec_s + partialC.at(i)(p,q) * y.at(i);
+      }
+      gbeta.elem(sub_loc) = vec_s;
+    }
+  }
+  gbeta += lambda_eigen_t*(Omega_eigen_t+Omega_eigen_t.t())*beta+lambda_eigen_d*(Omega_eigen_d+Omega_eigen_d.t())*beta;
+
+  return gbeta;
+}
