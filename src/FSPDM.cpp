@@ -227,3 +227,17 @@ double ObjGradient::gradient_sigma2(){
 void MainAlgorithm::compute(){
   initialize();
 }
+
+void MainAlgorithm::initialize(){
+  theta = theta0;
+  beta = beta0;
+  upsigma2 = upsigma20;
+
+  sigma2 = sigma20;
+
+  store_intermediateData();
+
+  update_C();
+
+
+}
