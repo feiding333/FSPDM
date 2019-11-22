@@ -141,3 +141,47 @@ vec ObjGradient::gradient_beta(){
 
   return gbeta;
 }
+
+// gtheta
+// gradient theta
+vec ObjGradient::gradient_theta(){
+  vec gtheta(u);
+  std::cout << "flag2"<< std::endl;
+  vec vec_s = zeros<vec>(u);
+  // *****
+  mat tmpLn;
+  mat tmpDn;
+  mat IdentityMr = eye<mat>(r,r);
+  mat tmp_cholM_this;
+
+  if(sigma20 != 100000){
+    // get the current \partial L \partial C_n
+
+    for (int i=0; i < N; i++) {
+      tmp_cholM_this = sigma2*IdentityMr + (C.at(i).t()*BtB.at(i)*C.at(i));
+      tmpLn = chol(tmp_cholM_this, "lower");
+      // get D_n
+      tmpDn = solve(tmpLn,C.at(i).t());
+      vec_s = vec_s+2*pow(sigma2,-1)*BtH.at(i).t()*tmpDn.t()*tmpDn*(Btx.at(i)-BtH.at(i)*theta);
+      vec_s = vec_s-2*pow(sigma2,-1)*(Htx.at(i)-HtH.at(i)*theta);
+    }
+
+  }else{
+    // get the current \partial L \partial C_n
+
+    for (int i=0; i < N; i++) {
+      tmp_cholM_this = IdentityMr + (C.at(i).t()*BtAinvB.at(i)*C.at(i));
+      tmpLn = chol(tmp_cholM_this, "lower");
+      // get D_n
+      tmpDn = solve(tmpLn,C.at(i).t());
+      vec_s = vec_s+2*BtAinvH.at(i).t()*tmpDn.t()*tmpDn*(BtAinvx.at(i)-BtAinvH.at(i)*theta);
+      vec_s = vec_s-2*(HtAinvx.at(i)-HtAinvH.at(i)*theta);
+    }
+
+  }
+  gtheta = vec_s + lambda_mean_t*(Omega_mean_t+Omega_mean_t.t())*theta+ lambda_mean_y*(Omega_mean_y+Omega_mean_y.t())*theta;
+  // penalty
+  //gtheta += lambda*(Omega+Omega.t())*beta;
+
+  return gtheta;
+}
