@@ -185,3 +185,42 @@ vec ObjGradient::gradient_theta(){
 
   return gtheta;
 }
+
+// gsigma2
+// gradient sigma2
+double ObjGradient::gradient_sigma2(){
+  double gsigma2;
+  std::cout << "flag3"<< std::endl;
+  double s = 0;
+
+  // *****
+  mat tmpLn;
+  mat tmpDn;
+  vec Sigma_inv_y;
+  mat IdentityMr = eye<mat>(r,r);
+  mat tmp_cholM_this;
+  // get the current \partial L \partial C_n
+
+  for (int i=0; i < N; i++) {
+
+    tmp_cholM_this = sigma2*IdentityMr + (C.at(i).t()*BtB.at(i)*C.at(i));
+
+    tmpLn = chol(tmp_cholM_this, "lower");
+
+
+    // get D_n
+    tmpDn = solve(tmpLn,C.at(i).t());
+
+    s = s+pow(sigma2,-1)*ni(i)-pow(sigma2,-1)*sum(diagvec(tmpDn.t()*tmpDn*BtB.at(i)));
+    Sigma_inv_y = pow(sigma2,-1)*(X.at(i) - B.at(i)*tmpDn.t()*tmpDn*Btx.at(i));
+    // caution
+    s = s - as_scalar(Sigma_inv_y.t() * Sigma_inv_y);
+  }
+
+  gsigma2 = s;
+  // penalty
+  //gtheta += lambda*(Omega+Omega.t())*beta;
+
+
+  return gsigma2;
+}
