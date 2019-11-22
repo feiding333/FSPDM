@@ -192,8 +192,6 @@ double ObjGradient::gradient_sigma2(){
   double gsigma2;
   std::cout << "flag3"<< std::endl;
   double s = 0;
-
-  // *****
   mat tmpLn;
   mat tmpDn;
   vec Sigma_inv_y;
@@ -223,4 +221,9 @@ double ObjGradient::gradient_sigma2(){
 
 
   return gsigma2;
+}
+
+// compute
+void MainAlgorithm::compute(){
+  initialize();
 }
