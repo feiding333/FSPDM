@@ -282,4 +282,10 @@ double MainAlgorithm::objfunc_with_sigma2(double matter_){
   set_sigma2( matter_);
   return objfunc();
 }
+// Construct the gradient function of the sigma2  by wrapping gradient_sigma2() function.
+double MainAlgorithm::grad_with_sigma2(double sigma2_use){
+  set_sigma2(sigma2_use);
+  return gradient_sigma2();
+
+}
 
