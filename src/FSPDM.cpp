@@ -241,3 +241,16 @@ void MainAlgorithm::initialize(){
 
 
 }
+// Write the objection with all parameters as input by wrapping objfunc() function
+double MainAlgorithm::objfunc_with_all(vec cur_beta, vec cur_theta, double cur_sigma2){
+  lambda_eigen_t = 0;
+  lambda_eigen_d = 0;
+  lambda_mean_t = 0;
+  lambda_mean_y = 0;
+  set_beta( cur_beta);
+  set_theta( cur_theta);
+  set_upsigma2(log(cur_sigma2));
+  set_sigma2( cur_sigma2);
+  return objfunc();
+}
+
