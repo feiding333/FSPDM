@@ -270,5 +270,10 @@ double MainAlgorithm::objfunc_with_theta(vec matter_){
   set_theta( matter_);
   return objfunc();
 }
+// Construct the gradient function of the theta  by wrapping gradient_theta() function.
+vec MainAlgorithm::grad_with_theta(vec theta_use){
+  set_theta(theta_use);
+  return gradient_theta();
 
+}
 
