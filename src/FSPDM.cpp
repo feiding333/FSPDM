@@ -274,6 +274,12 @@ double MainAlgorithm::objfunc_with_theta(vec matter_){
 vec MainAlgorithm::grad_with_theta(vec theta_use){
   set_theta(theta_use);
   return gradient_theta();
+}
 
+// sigma2
+//Construct the objective function with the sigma2 as the only input by wrapping objfunc() function.
+double MainAlgorithm::objfunc_with_sigma2(double matter_){
+  set_sigma2( matter_);
+  return objfunc();
 }
 
