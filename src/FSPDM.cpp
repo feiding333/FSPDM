@@ -293,4 +293,9 @@ double MainAlgorithm::objfunc_with_upsigma2(double matter_){
   set_upsigma2( matter_);
   return objfunc();
 }
+// Construct the gradient function of the exp(sigma2)  by wrapping gradient_sigma2() function.
+double MainAlgorithm::grad_with_upsigma2(double upsigma2_use){
+  set_upsigma2(upsigma2_use);
+  return (gradient_sigma2() * sigma2);
+}
 
