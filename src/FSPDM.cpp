@@ -256,9 +256,12 @@ double MainAlgorithm::objfunc_with_all(vec cur_beta, vec cur_theta, double cur_s
 
 // Construct the objective function with the beta as the only input by wrapping objfunc() function.
 double MainAlgorithm::objfunc_with_beta(vec matter_){
-  //std::cout << "objfunction beta"<< std::endl;
-
   set_beta( matter_);
   return objfunc();
 }
+// Construct the gradient function of the beta  by wrapping gradient_beta() function.
+vec MainAlgorithm::grad_with_beta(vec beta_use){
+  set_beta(beta_use);
+  return gradient_beta();
 
+}
