@@ -286,6 +286,11 @@ double MainAlgorithm::objfunc_with_sigma2(double matter_){
 double MainAlgorithm::grad_with_sigma2(double sigma2_use){
   set_sigma2(sigma2_use);
   return gradient_sigma2();
-
+}
+// upsigma2
+//Construct the objective function with the exp(sigma2) as the only input by wrapping objfunc() function.
+double MainAlgorithm::objfunc_with_upsigma2(double matter_){
+  set_upsigma2( matter_);
+  return objfunc();
 }
 
