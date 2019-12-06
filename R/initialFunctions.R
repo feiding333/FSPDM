@@ -64,3 +64,31 @@ get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin){
 
   return(resAndpre)
 }
+# use the least square method to get the initial value of beta
+Init_beta = function(resAndpre_list){
+  # get the dimension of the C matrix.
+  rownum = dim(resAndpre_list$est_C[[1]])[1]
+  colnum = dim(resAndpre_list$est_C[[1]])[2]
+  num_bin = length(resAndpre_list$est_C)
+  init_beta = c()
+  # construct the predictor and response of the least square method.
+  for (q in 1:colnum) {
+    for (p in 1:rownum) {
+      ly = c()
+      lx = resAndpre_list$predictor_d
+      print(num_bin)
+      for (i in 1:num_bin) {
+        tmpC = resAndpre_list$est_C[[i]]
+        ly = c(ly,tmpC[p,q])
+      }
+      print(dim(lx))
+      init_beta_pq = lm(formula =  ly ~ lx-1)
+      print(summary(init_beta_pq))
+      init_beta_pq = as.vector( init_beta_pq$coefficients)
+      init_beta = c(init_beta,init_beta_pq)
+    }
+  }
+
+  return(init_beta)
+}
+
