@@ -103,6 +103,16 @@ train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 =
   return(parameter_est)
 }
 
+### update theta using the function exports from C code.
+update_theta = function(SPDMEstimation = SPDMEstimation,theta_cur){
+  est_usepac = optim(theta_cur, SPDMEstimation$objfunc_with_theta,SPDMEstimation$grad_with_theta,
+                     method = "BFGS",control = list(maxit = 1e6,reltol = 1e-35))
+  theta_cur = est_usepac$par
+  SPDMEstimation$set_theta(theta_cur)
+  return(theta_cur)
+
+}
+
 # update functions
 #### update beta parameters using the function exports from C code.
 update_beta = function(SPDMEstimation = SPDMEstimation,theta_cur,sigma2_cur,beta_last = NULL){
