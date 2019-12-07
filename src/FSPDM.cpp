@@ -190,7 +190,6 @@ vec ObjGradient::gradient_theta(){
 // gradient sigma2
 double ObjGradient::gradient_sigma2(){
   double gsigma2;
-  std::cout << "flag3"<< std::endl;
   double s = 0;
   mat tmpLn;
   mat tmpDn;
