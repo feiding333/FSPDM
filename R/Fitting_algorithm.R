@@ -1,5 +1,5 @@
 ## train function to fit FSPDM model
-train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 = 0, lambda2 = 0,lambda3 = 0, lambda4 = 0, testIndexes = NULL,sigma2_list = NULL){
+train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 = 0, lambda2 = 0,lambda3 = 0, lambda4 = 0, testIndexes = NULL,sigma2_list = NULL,maxout = 1){
   list_beta = list()
   list_init_beta = list()
   list_theta = list()
@@ -101,4 +101,28 @@ train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 =
   parameter_est$testIndexes = testIndexes
   parameter_est$responseAndpre_used = responseAndpre_used
   return(parameter_est)
+}
+
+# update functions
+#### update beta parameters using the function exports from C code.
+update_beta = function(SPDMEstimation = SPDMEstimation,theta_cur,sigma2_cur,beta_last = NULL){
+  ## initial step when update beta
+  if(!is.null(beta_last)){
+    init_beta = beta_last
+  }else{
+    responseAndpre_used = get_resAndpre(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cur,sigma2_cur)
+    init_beta = Init_beta(responseAndpre_used)
+    init_beta = init_beta$init_beta
+  }
+  ## using the function export from c code to update beta
+  SPDMEstimation$set_beta(init_beta)
+  est_usepac = optim(init_beta, SPDMEstimation$objfunc_with_beta,SPDMEstimation$grad_with_beta,
+                     method = "BFGS",control = list(maxit = 1e6,reltol = 1e-35,abstol = 1e-30))
+  beta_cur = est_usepac$par
+  SPDMEstimation$set_beta(beta_cur)
+  result_cur = list()
+  result_cur$beta_cur = beta_cur
+  result_cur$init_beta = init_beta
+  result_cur$responseAndpre_used = responseAndpre_used
+  return(result_cur)
 }
