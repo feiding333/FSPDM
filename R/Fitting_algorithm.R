@@ -144,3 +144,11 @@ update_sigma2 = function(SPDMEstimation= SPDMEstimation,sigma2_cur){
   SPDMEstimation$set_sigma2(sigma2_cur)
   return(sigma2_cur)
 }
+### update upsigma2, i.e. exp(sigma2) ,using the function exports from C code.
+update_upsigma2 = function(SPDMEstimation=SPDMEstimation,upsigma2_cur){
+  est_usepac = optim(upsigma2_cur, SPDMEstimation$objfunc_with_upsigma2,SPDMEstimation$grad_with_upsigma2,
+                     method = "BFGS",control = list(maxit = 1e6,reltol = 1e-35,abstol = 1e-30))
+  upsigma2_cur = est_usepac$par
+  SPDMEstimation$set_upsigma2(upsigma2_cur)
+  return(upsigma2_cur)
+}
