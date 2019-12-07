@@ -58,6 +58,15 @@ public:
   void initialize();
   // optimize() function
   vec optimize();
+  //protected:
+protected:
+  // set some parameters
+  double mainmaxinter;
+  double innermaxinter;
+  double tolerance;
+  //double lambda;
+  double c1;
+  double c2;
 
 
 };
