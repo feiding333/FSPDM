@@ -28,6 +28,17 @@ public:
     set_data_raw (X_,y_,B_,H_,ni_,Omega_eigen_t_,Omega_eigen_d_,Omega_mean_t_,Omega_mean_y_,r_,k_,lambda_eigen_t_,lambda_eigen_d_,lambda_mean_t_,lambda_mean_y_,beta0_,theta0_,sigma20_,upsigma20_,sigma2list_);
   }
 
+  // set parameters
+  void set_parameters(double mainmaxinter_, double innermaxinter_, double tolerance_,double c1_,double c2_){
+    mainmaxinter = mainmaxinter_;
+    innermaxinter = innermaxinter_;
+    tolerance = tolerance_;
+    //lambda = lambda_;
+    c1 = c1_;
+    c2 = c2_;
+  }
+
+
 };
 
 
