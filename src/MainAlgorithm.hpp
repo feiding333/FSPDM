@@ -38,6 +38,27 @@ public:
     c2 = c2_;
   }
 
+  // the objective function for all parameters
+  double objfunc_with_all(vec cur_beta, vec cur_theta, double cur_sigma2);
+  // gradient and objective function of beta
+  vec grad_with_beta(vec beta_use);
+  double objfunc_with_beta(vec mater_);
+  // gradient and objective function of theta
+  vec grad_with_theta(vec theta_use);
+  double objfunc_with_theta(vec mater_);
+  // gradient and objective function of sigma2
+  double grad_with_sigma2(double sigma2_use);
+  double objfunc_with_sigma2(double mater_);
+  // gradient and objective function off exp(sigma2)
+  double grad_with_upsigma2(double upsigma2_use);
+  double objfunc_with_upsigma2(double upmater_);
+  // compute function
+  void compute();
+  // initialize() function
+  void initialize();
+  // optimize() function
+  vec optimize();
+
 
 };
 
