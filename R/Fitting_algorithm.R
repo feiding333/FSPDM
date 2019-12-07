@@ -136,3 +136,11 @@ update_beta = function(SPDMEstimation = SPDMEstimation,theta_cur,sigma2_cur,beta
   result_cur$responseAndpre_used = responseAndpre_used
   return(result_cur)
 }
+### update sigma2 using the function exports from C code.
+update_sigma2 = function(SPDMEstimation= SPDMEstimation,sigma2_cur){
+  est_usepac = optim(sigma2_cur, SPDMEstimation$objfunc_with_sigma2,SPDMEstimation$grad_with_sigma2,
+                     method = "BFGS",control = list(maxit = 1e6,reltol = 1e-35,abstol = 1e-30))
+  sigma2_cur = est_usepac$par
+  SPDMEstimation$set_sigma2(sigma2_cur)
+  return(sigma2_cur)
+}
