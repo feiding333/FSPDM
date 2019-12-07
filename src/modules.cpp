@@ -25,7 +25,6 @@ RCPP_MODULE(outfun){
     .method("grad_with_sigma2",&MainAlgorithm::grad_with_sigma2)
     .method("objfunc_with_upsigma2",&MainAlgorithm::objfunc_with_upsigma2)
     .method("grad_with_upsigma2",&MainAlgorithm::grad_with_upsigma2)
-    .method("optimize1",&MainAlgorithm::optimize)
 
 
 

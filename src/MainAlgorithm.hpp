@@ -57,7 +57,7 @@ public:
   // initialize() function
   void initialize();
   // optimize() function
-  vec optimize();
+  arma::vec optimize();
   //protected:
 protected:
   // set some parameters
