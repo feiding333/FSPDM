@@ -262,6 +262,8 @@ Estimate_Eigenfunction = function(est_beta,r,M1,Spline_func){
 ## get the estimation of mean function
 get_mean_compare = function(mean_func,Spline_func,seq_t,seq_y,theta_est,othermodel = NULL){
   plotData = data.frame();
+  seq_t = seq(tmin,tmax,length.out = 100)
+  seq_y = seq(ymin,ymax,length.out = 12)
   for (ploty in seq_y) {
     true_mean = mean_func(seq_t,ploty)
     Bi = Spline_func[[1]]$evalSpline(seq_t)
