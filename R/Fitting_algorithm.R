@@ -259,6 +259,59 @@ Estimate_Eigenfunction = function(est_beta,r,M1,Spline_func){
   return(plot_eigenfunc)
 }
 
+## get the estimation of mean function
+get_mean_compare = function(mean_func,Spline_func,seq_t,seq_y,theta_est,othermodel = NULL){
+  plotData = data.frame();
+  for (ploty in seq_y) {
+    true_mean = mean_func(seq_t,ploty)
+    Bi = Spline_func[[1]]$evalSpline(seq_t)
+    Bi = t(Bi)
+    tmpH_i = Spline_func[[3]]$evalSpline(ploty)
+    tmp_tensor_list = list(Bi,t(tmpH_i));
+    Hi = kronecker_list(tmp_tensor_list);
+    rep_mean_num = length(theta_est)
+    if (rep_mean_num == 1) {
+      rep_mean_num_seq = 1
+    }else{
+      rep_mean_num_seq = 1:rep_mean_num
+    }
+    est_mean = c()
+    for (i in rep_mean_num_seq) {
+      tmp_est_mean = Hi%*%theta_est[[i]]
+      est_mean = cbind(est_mean,tmp_est_mean)
+    }
+    ###
+    est_mean = t(est_mean)
+    est_mean = data.frame(est_mean)
+    print(est_mean)
+    est_mean = melt(est_mean,measure.vars = colnames(est_mean))
+
+    est_mean = summarySE(est_mean, measurevar="value", groupvars="variable")
+    fest_mean = est_mean$value
+    ci_est = 2*est_mean$se
+    ci_tru = 0
+    tmp = data.frame(obsT = seq_t, obsY = true_mean, covariate_y = ploty,
+                     curveID = "True Curve",ci = ci_tru, stringsAsFactors =  F)
+    tmp2 = data.frame(obsT = seq_t, obsY = fest_mean, covariate_y = ploty,
+                      curveID = "SFPDM",ci = ci_est,stringsAsFactors =  F)
+    tmp = rbind(tmp, tmp2)
+    plotData = rbind(plotData, tmp)
+    ###
+
+
+  }
+  colnames(plotData) = c("Time", "X", "covariate","Curve","ci")
+  plotData$covariate = paste('covariate:',round(plotData$covariate,2) )
+  p = ggplot(plotData, aes(Time, X,
+                           group = Curve, color = Curve)) +
+    geom_line(aes(linetype = Curve))+geom_ribbon(aes(x = Time, y = X,ymin= X-ci,ymax=X+ci,linetype = Curve),alpha=I(1/7))
+  p = p + facet_wrap(.~covariate)+
+    theme_bw()+scale_linetype_manual(values=c("twodash","solid"))+
+    scale_colour_manual(values = c("blue", "orange"))+
+    theme(axis.title.x = element_text(size = 18),axis.title.y = element_text(size = 16),axis.text.y = element_text(size = 14),legend.position = c(0.925,0.915), legend.title = element_blank())+xlab("t")+ labs(y=expression(mu~'(t,z)'))
+  return(p)
+}
+
 # ***** compare the estimator of eigen functions and true eigen function*****#
 plotcompare = function(plot_eigenfunc, Eigen_func,Eigen_Gen = NULL,selK = NULL){
   options(warn =-1)
