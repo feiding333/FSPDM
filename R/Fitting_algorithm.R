@@ -55,6 +55,16 @@
 #' beta = rep(0,r*M1*M3)
 #' parameter_best = train_function (Data_generated = Data_generated,Eig_num = Eig_num,k = k, beta = beta,theta = theta,sigma2 = sigma2)
 train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 = 0, lambda2 = 0,lambda3 = 0, lambda4 = 0, testIndexes = NULL,sigma2_list = NULL,maxout = 1){
+  ## check the compatibility
+  if(!is.null(beta)){
+    stop("the start point of beta should be given")
+  }
+  if(!is.null(theta)){
+    stop("the start point of theta should be given")
+  }
+  if(!is.null(sigma2)){
+    stop("the start point of sigma2 should be given")
+  }
   list_beta = list()
   list_init_beta = list()
   list_theta = list()
