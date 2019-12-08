@@ -1,4 +1,59 @@
 ## train function to fit FSPDM model
+
+#' Main fitting algorithm of FSPDM method
+#'
+#' @param Data_generated a list constaining the observed value of functional data, covariates and penalty matrix
+#' @param Eig_num the number of eigenfunction users want to use
+#' @param k dimension of spline basis with respect to covariate in eigenfunctions
+#' @param beta the start point of beta parameters, can be set with all zeros
+#' @param theta the start point of theta parameters, can be set with all zeros
+#' @param sigma2 the start point of sigma2 parameters, can be set with small positive value
+#' @param lambda1 the tuning parameters of smoothness penalty with respect to t in mean function
+#' @param lambda2 the tuning parameters of smoothness penalty with respect to covariate in mean function
+#' @param lambda3 the tuning parameters of smoothness penalty with respect to t in eigenfunction
+#' @param lambda4 he tuning parameters of smoothness penalty with respect to covariate in eigenfunction
+#' @param testIndexes test Index if use cv
+#' @param sigma2_list measurement error if have
+#' @param maxout algorithm setting, default 1
+#'
+#' @return a list constains all estimator of SFPDM method
+#' @export
+#'
+#' @examples
+#' tmin = 0 # the start point of the curve
+#' tmax = 1 # the end point of the curve, i.e. the cuvre's regin is from tmin to tmax
+#' ymin = 0 # the minimum of the covariates
+#' ymax = 1 # the maximum of the covariate
+#' num_bin = 20 # number of bin in initial steps of our algorithm
+#' order = 4 # spline order
+#' nknots =8 # number of knots
+#' splineObj_t = new(orthoSpline,tmin,tmax,order,nknots)
+#' # degree freedom of spline basis
+#' M1 = splineObj_t$getDoF()
+#' ## basis with respect to y to get the tensor product basis
+#' yknots = 3
+#' splineObj_y = new(orthoSpline,ymin,ymax,order,(yknots))
+#' # degree freedom of spline basis
+#' M2 = splineObj_y$getDoF()
+#' ## basis with d that is in matrix C
+#' # basis with respect y (d^T), in C matrix
+#' dknots = 5
+#' splineObj_d = new(orthoSpline,ymin,ymax,order,dknots)
+#' # degree freedom of spline basis
+#' M3 = splineObj_d$getDoF()
+#' k = M3
+#' Spline_func = c(splineObj_t,splineObj_d,splineObj_y)
+#' ## set the number of principle components
+#' Eig_num = r =  3
+#' ## the the number of spline basis used
+#' ## spline basis for t
+#' M1 = 10
+#' M2 = 5
+#' M3 = k = 7
+#' theta = rep(0,M1*M2)
+#' sigma2 = 0.01
+#' beta = rep(0,r*M1*M3)
+#' parameter_best = train_function (Data_generated = Data_generated,Eig_num = Eig_num,k = k, beta = beta,theta = theta,sigma2 = sigma2)
 train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 = 0, lambda2 = 0,lambda3 = 0, lambda4 = 0, testIndexes = NULL,sigma2_list = NULL,maxout = 1){
   list_beta = list()
   list_init_beta = list()
@@ -161,6 +216,55 @@ train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 =
 
 ## get the estimation of eigenfunction.
 # estimate eigenfunction
+
+#' Get the estimation of Eigenfunctions using the estimators from the results of train_function
+#'
+#' @param est_beta the estimator of beta prameters, usually is the results from train_function
+#' @param r the number of eigenfunctions
+#' @param M1 the dimension of basis with respect to time t in mean function.
+#' @param Spline_func the spline basis function used approximate the mean and eigenfunction
+#'
+#' @return a list contains the estimation of eigenfunctions and the corresponding time sequence and covariate sequence
+#' @export
+#'
+#' @examples
+#' tmin = 0 # the start point of the curve
+#' tmax = 1 # the end point of the curve, i.e. the cuvre's regin is from tmin to tmax
+#' ymin = 0 # the minimum of the covariates
+#' ymax = 1 # the maximum of the covariate
+#' num_bin = 20 # number of bin in initial steps of our algorithm
+#' order = 4 # spline order
+#' nknots =8 # number of knots
+#' splineObj_t = new(orthoSpline,tmin,tmax,order,nknots)
+#' # degree freedom of spline basis
+#' M1 = splineObj_t$getDoF()
+#' ## basis with respect to y to get the tensor product basis
+#' yknots = 3
+#' splineObj_y = new(orthoSpline,ymin,ymax,order,(yknots))
+#' # degree freedom of spline basis
+#' M2 = splineObj_y$getDoF()
+#' ## basis with d that is in matrix C
+#' # basis with respect y (d^T), in C matrix
+#' dknots = 5
+#' splineObj_d = new(orthoSpline,ymin,ymax,order,dknots)
+#' # degree freedom of spline basis
+#' M3 = splineObj_d$getDoF()
+#' k = M3
+#' Spline_func = c(splineObj_t,splineObj_d,splineObj_y)
+#' ## set the number of principle components
+#' Eig_num = r =  3
+#' ## the the number of spline basis used
+#' ## spline basis for t
+#' M1 = 10
+#' M2 = 5
+#' M3 = k = 7
+#' theta = rep(0,M1*M2)
+#' sigma2 = 0.01
+#' beta = rep(0,r*M1*M3)
+#' parameter_best = train_function (Data_generated = Data_generated,Eig_num = Eig_num,k = k, beta = beta,theta = theta,sigma2 = sigma2)
+#' mean_func = function(t,covariate){return(30*(t - covariate)^2)}
+#' get_mean_compare(mean_func = mean_func,Spline_func = Spline_func,theta_est = parameter_best$theta)
+#' eigen_function_estimation = Estimate_Eigenfunction (est_beta = parameter_best$beta,r = r,M1 = M1,Spline_func = Spline_func)
 Estimate_Eigenfunction = function(est_beta,r,M1,Spline_func){
   est_beta = list(est_beta)
   phi_1 = function(t,covariate){
@@ -260,6 +364,54 @@ Estimate_Eigenfunction = function(est_beta,r,M1,Spline_func){
 }
 
 ## get the estimation of mean function
+
+#' plot function to compare the estimation of SFPDM mean function and true mean function
+#'
+#' @param mean_func the true mean function
+#' @param Spline_func spline function used to trrain the model
+#' @param theta_est the estimation of theta parameters from the results of train_function
+#' @param othermodel othermodel if users want to add to compare
+#'
+#' @return the plot of comparison between the estimation of SFPDM mean function and true mean function
+#' @export
+#'
+#' @examples
+#' tmin = 0 # the start point of the curve
+#' tmax = 1 # the end point of the curve, i.e. the cuvre's regin is from tmin to tmax
+#' ymin = 0 # the minimum of the covariates
+#' ymax = 1 # the maximum of the covariate
+#' num_bin = 20 # number of bin in initial steps of our algorithm
+#' order = 4 # spline order
+#' nknots =8 # number of knots
+#' splineObj_t = new(orthoSpline,tmin,tmax,order,nknots)
+#' # degree freedom of spline basis
+#' M1 = splineObj_t$getDoF()
+#' ## basis with respect to y to get the tensor product basis
+#' yknots = 3
+#' splineObj_y = new(orthoSpline,ymin,ymax,order,(yknots))
+#' # degree freedom of spline basis
+#' M2 = splineObj_y$getDoF()
+#' ## basis with d that is in matrix C
+#' # basis with respect y (d^T), in C matrix
+#' dknots = 5
+#' splineObj_d = new(orthoSpline,ymin,ymax,order,dknots)
+#' # degree freedom of spline basis
+#' M3 = splineObj_d$getDoF()
+#' k = M3
+#' Spline_func = c(splineObj_t,splineObj_d,splineObj_y)
+#' ## set the number of principle components
+#' Eig_num = r =  3
+#' ## the the number of spline basis used
+#' ## spline basis for t
+#' M1 = 10
+#' M2 = 5
+#' M3 = k = 7
+#' theta = rep(0,M1*M2)
+#' sigma2 = 0.01
+#' beta = rep(0,r*M1*M3)
+#' parameter_best = train_function (Data_generated = Data_generated,Eig_num = Eig_num,k = k, beta = beta,theta = theta,sigma2 = sigma2)
+#' mean_func = function(t,covariate){return(30*(t - covariate)^2)}
+#' get_mean_compare(mean_func = mean_func,Spline_func = Spline_func,theta_est = parameter_best$theta)
 get_mean_compare = function(mean_func,Spline_func,theta_est,othermodel = NULL){
   theta_est = list(theta_est)
   plotData = data.frame();
@@ -315,6 +467,60 @@ get_mean_compare = function(mean_func,Spline_func,theta_est,othermodel = NULL){
 }
 
 # ***** compare the estimator of eigen functions and true eigen function*****#
+
+#' plot function to compare the estimation of SFPDM eigen function and true eigen function
+#'
+#' @param plot_eigenfunc the estimation from the results of Estimate_Eigenfunction function
+#' @param Eigen_func true eigenfunctions list
+#' @param Eigen_Gen other model if users want to compare
+#' @param selK the number of eigenfunction users want to compare
+#'
+#' @return the plot of comparison between eigenfunctions estimation and true eigenfunctions
+#' @export
+#'
+#' @examples
+#' tmin = 0 # the start point of the curve
+#' tmax = 1 # the end point of the curve, i.e. the cuvre's regin is from tmin to tmax
+#' ymin = 0 # the minimum of the covariates
+#' ymax = 1 # the maximum of the covariate
+#' num_bin = 20 # number of bin in initial steps of our algorithm
+#' order = 4 # spline order
+#' nknots =8 # number of knots
+#' splineObj_t = new(orthoSpline,tmin,tmax,order,nknots)
+#' # degree freedom of spline basis
+#' M1 = splineObj_t$getDoF()
+#' ## basis with respect to y to get the tensor product basis
+#' yknots = 3
+#' splineObj_y = new(orthoSpline,ymin,ymax,order,(yknots))
+#' # degree freedom of spline basis
+#' M2 = splineObj_y$getDoF()
+#' ## basis with d that is in matrix C
+#' # basis with respect y (d^T), in C matrix
+#' dknots = 5
+#' splineObj_d = new(orthoSpline,ymin,ymax,order,dknots)
+#' # degree freedom of spline basis
+#' M3 = splineObj_d$getDoF()
+#' k = M3
+#' Spline_func = c(splineObj_t,splineObj_d,splineObj_y)
+#' ## set the number of principle components
+#' Eig_num = r =  3
+#' ## the the number of spline basis used
+#' ## spline basis for t
+#' M1 = 10
+#' M2 = 5
+#' M3 = k = 7
+#' theta = rep(0,M1*M2)
+#' sigma2 = 0.01
+#' beta = rep(0,r*M1*M3)
+#' parameter_best = train_function (Data_generated = Data_generated,Eig_num = Eig_num,k = k, beta = beta,theta = theta,sigma2 = sigma2)
+#' mean_func = function(t,covariate){return(30*(t - covariate)^2)}
+#' get_mean_compare(mean_func = mean_func,Spline_func = Spline_func,theta_est = parameter_best$theta)
+#' eigen_function_estimation = Estimate_Eigenfunction (est_beta = parameter_best$beta,r = r,M1 = M1,Spline_func = Spline_func)
+#'  phi_1 = function(t,covariate){return(cos(pi*(t+covariate))*sqrt(2))}
+#'   phi_2 = function(t,covariate){return(sin(pi*(t+covariate))*sqrt(2))}
+#'   phi_3 = function(t,covariate){return(cos(3*pi*(t-covariate))*sqrt(2))}
+#'   Eigen_func = c(phi_1,phi_2,phi_3)
+#'   plotcompare(plot_eigenfunc = eigen_function_estimation, Eigen_func = Eigen_func,selK = 1)
 plotcompare = function(plot_eigenfunc, Eigen_func,Eigen_Gen = NULL,selK = NULL){
   options(warn =-1)
   seq_t = plot_eigenfunc$seq_t

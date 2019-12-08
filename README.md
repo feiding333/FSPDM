@@ -36,8 +36,10 @@ library(ggsci)
 
 # Example
 ## Simulate Data
-load simulated data
+load simulated data, it is in the package data folder named data.
+```s
 load('data/data')
+```
 # construct the spline basis that used in our model
 ```s
 tmin = 0 # the start point of the curve

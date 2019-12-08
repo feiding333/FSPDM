@@ -8,3 +8,4 @@ Description: This package is the implement of our supervised Functional PCA meth
 License: GPL-3
 Imports: Rcpp (>= 0.12.19)
 LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 6.1.1
