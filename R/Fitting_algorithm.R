@@ -8,6 +8,12 @@ train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 =
   list_responseAndpre_used = list()
   list_init_beta = list()
   set.seed(100)
+  ## set the tolerance
+  torrence_theta = 0.1
+  torrence_beta = 0.1
+  torrence_sigma2 = 0.1
+  maxinner = 1
+  maxout = 1
   # get the initial value of beta
   # use FSPDM to get the estimator of the beta
   # use the class function export from c code to get the estimation of our prameters
