@@ -258,3 +258,94 @@ Estimate_Eigenfunction = function(est_beta,r,M1,Spline_func){
   plot_eigenfunc$est_eigen_mean_diff =est_eigen_mean_diff
   return(plot_eigenfunc)
 }
+
+# ***** compare the estimator of eigen functions and true eigen function*****#
+plotcompare = function(plot_eigenfunc, Eigen_func,Eigen_Gen = NULL,selK = NULL){
+  options(warn =-1)
+  seq_t = plot_eigenfunc$seq_t
+  seq_y = plot_eigenfunc$seq_y
+  tmin = min(plot_eigenfunc$seq_t)
+  tmax = max(plot_eigenfunc$seq_t)
+  num_eigen = plot_eigenfunc$num_eigen
+  nSeq = length(plot_eigenfunc$seq_t)
+  plotData = data.frame();
+  selR = 1:nSeq
+  Plot_y_num = length(seq_y)
+  # Plot_y_num is the number of covariates we want to plot
+  for (tmpi in 1:Plot_y_num) {
+    ploty = seq_y[tmpi]
+    for(i in 1:num_eigen){
+      options(warn =-1)
+      fSeq0 = Eigen_func[[i]](seq_t,ploty)
+      tmpfSeqHat = plot_eigenfunc$eigfun[[i]][[tmpi]]
+      tmp_diff = (tmpfSeqHat - fSeq0)^2
+      tmpfSeqHat = t(tmpfSeqHat)
+      tmp_diff = t(tmp_diff)
+      tmpfSeqHat = data.frame(tmpfSeqHat)
+      tmp_diff = data.frame(tmp_diff)
+      tmpfSeqHat = melt(tmpfSeqHat,measure.vars = colnames(tmpfSeqHat))
+      tmp_diff = melt(tmp_diff,measure.vars = colnames(tmp_diff))
+
+      tmpfSeqHat = summarySE(tmpfSeqHat, measurevar="value", groupvars="variable")
+      tmp_diff = summarySE(tmp_diff, measurevar="value", groupvars="variable")
+      fSeqHat = tmpfSeqHat$value
+      if(!is.null(Eigen_Gen)){
+        fSeqGen = Eigen_Gen[,i]
+
+      }
+      Diff = tmp_diff$value
+      ci_est = 2*tmpfSeqHat$se
+      Diff_ci = 2*tmp_diff$se
+      ci_tru = 0
+      if(sum(fSeq0*fSeqHat) < 0) fSeqHat = -fSeqHat
+      if(!is.null(Eigen_Gen)){
+        if(sum(fSeq0*fSeqGen) < 0) fSeqGen = -fSeqGen
+
+      }
+      tmpsquare_error = (fSeqHat - fSeq0)^2
+      tmp = data.frame(obsT = seq_t, obsY = fSeq0, covariate_y = ploty,
+                       pcaID =  i, curveID = "True curve",ci = ci_tru, square_error = 0,D_ci = 0, stringsAsFactors =  F)
+      tmp2 = data.frame(obsT = seq_t, obsY = fSeqHat, covariate_y = ploty,
+                        pcaID =  i,curveID = "SFPDM",ci = ci_est, square_error = Diff,D_ci = Diff_ci ,stringsAsFactors =  F)
+      if(!is.null(Eigen_Gen)){
+        tmp3 = data.frame(obsT = seq_t, obsY = fSeqGen, covariate_y = ploty,
+                          pcaID =  i,curveID = "SupSFPC",ci = 0, square_error = 0,D_ci = 0 ,stringsAsFactors =  F)
+        tmp = rbind(tmp, tmp2,tmp3)
+      }else{
+        tmp = rbind(tmp, tmp2)
+      }
+
+      plotData = rbind(plotData, tmp)
+
+      selR = selR + nSeq
+    }
+
+  }
+
+  colnames(plotData) = c("Time", "X", "covariate","pcaID", "Curve","ci","square_error","Dci")
+  plotData$covariate = paste('covariate:',round(plotData$covariate,2) )
+  if(!is.null(selK)){
+    options(warn =-1)
+    plotData = subset(plotData, plotData$pcaID == selK)
+    p = ggplot(plotData, aes(Time, X,
+                             group = Curve, color = Curve)) +
+      geom_line(aes(linetype = Curve))+geom_ribbon(aes(x = Time, y = X,ymin= X-ci,ymax=X+ci,linetype = Curve ),alpha=I(1/7))
+    p = p + facet_wrap(.~covariate) + theme_bw() + scale_linetype_manual(values=c("twodash", "dotted","solid"))
+
+    p = p + scale_color_d3()+
+      scale_colour_manual(values = c("blue","purple","orange") )+
+      theme(axis.title.x = element_text(size = 18),axis.title.y = element_text(size = 16),axis.text.y = element_text(size = 14),legend.position = c(0.925,0.88), legend.title = element_blank())+xlab("t")+ylab("f(t,z)")
+
+
+
+
+  }else{
+    options(warn =-1)
+    p = ggplot(plotData, aes(Time, X,
+                             group = Curve, color = Curve)) +
+      geom_line()+geom_ribbon(aes(x = Time, y = X,ymin= X-ci,ymax=X+ci,group = "Curve"),alpha=I(1/7))
+    p = p + facet_wrap(.~round(covariate,5))
+
+  }
+  return(p)
+}
