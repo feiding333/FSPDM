@@ -158,3 +158,103 @@ update_upsigma2 = function(SPDMEstimation=SPDMEstimation,upsigma2_cur){
   SPDMEstimation$set_upsigma2(upsigma2_cur)
   return(upsigma2_cur)
 }
+
+## get the estimation of eigenfunction.
+# estimate eigenfunction
+Estimate_Eigenfunction = function(est_beta,r,M1,Spline_func){
+  est_beta = list(est_beta)
+  phi_1 = function(t,covariate){
+    return(cos(pi*(t+covariate))*sqrt(2))
+
+  }
+  phi_2 = function(t,covariate){
+    return(sin(pi*(t+covariate))*sqrt(2))
+
+  }
+  phi_3 = function(t,covariate){
+    return(cos(3*pi*(t-covariate))*sqrt(2))
+  }
+  Eigen_func = c(phi_1,phi_2,phi_3)
+  construc_value = function(y){
+    a = c((y+25)*2,(y+20), y+1)
+    return(a)
+  }
+  seq_t = seq(tmin,tmax,length.out = 100)
+  seq_y = seq(ymin,ymax,length.out = 12)
+  Num_Repr = 1
+  Plot_y_num = length(seq_y)
+  num_eigen = length(Eigen_func)
+  B_plot = Spline_func[[1]]$evalSpline(seq_t)
+  Plot_eigfunc_1 = list()
+  Plot_eigfunc_2 = list()
+  Plot_eigfunc_3 = list()
+  est_eigenvalue_diff = c()
+  est_eigen_mean_diff = c()
+  cov_list = list()
+  for (ploty in seq_y) {
+    tmp_zi = Spline_func[[2]]$evalSpline(ploty)
+    matrix_eigfunc_1 = c()
+    matrix_eigfunc_2 = c()
+    matrix_eigfunc_3 = c()
+    C = matrix(0,M1,r)
+    cov_dif = c()
+    mean_diff = c()
+    for (R in 1:Num_Repr) {
+      for (q in 1:r) {
+        for (p in 1:M1) {
+          num_subVec = (q-1)*M1*k+(p-1)*k + 1
+          if(Num_Repr == 1){
+            C[p,q] =sum(t(tmp_zi)*est_beta[[R]][seq(num_subVec,(num_subVec+(k-1)))])
+          }else{
+            C[p,q] = sum(t(tmp_zi)*est_beta[[R]][seq(num_subVec,(num_subVec+(k-1)))])
+          }
+        }
+      }
+      # Aplot = C%*%t(C)
+      # caculate the eigen value
+      tmpcol = colSums(C*C)
+      tmpeig_vec = C%*%diag(1/sqrt(tmpcol))
+      #Plot_eig$values[1:num_eigen]
+      # get the true eigen value
+      zzz = construc_value(ploty)
+      # get the difference
+      est_eigenvalue_diff = rbind(est_eigenvalue_diff,zzz - tmpcol)
+      mean_diff = rbind(mean_diff,zzz - tmpcol)
+
+      # get the difference of convariance matrix
+      tmpPlot_eigfunc = t(B_plot)%*%tmpeig_vec
+      for (i in 1:num_eigen) {
+        tmpPlot_ori_i = Eigen_func[[i]](seq_t,covariate = ploty)
+        if(t(tmpPlot_ori_i)%*%tmpPlot_eigfunc[,i]<0){
+          tmpPlot_eigfunc[,i] = -tmpPlot_eigfunc[,i]
+        }
+      }
+      b = cbind(Eigen_func[[1]](seq_t,covariate = ploty),Eigen_func[[2]](seq_t,covariate = ploty),Eigen_func[[3]](seq_t,covariate = ploty))
+      a = cbind(tmpPlot_eigfunc[,1],tmpPlot_eigfunc[,2],tmpPlot_eigfunc[,3])
+      c = diag(tmpcol)
+      d = diag(construc_value(ploty))
+      dif_a = sum(abs(b%*%d%*%t(b) - a%*%c%*%t(a)))
+      cov_dif = c(cov_dif,dif_a)
+
+      # get the eigen function
+      matrix_eigfunc_1 = cbind(matrix_eigfunc_1,tmpPlot_eigfunc[,1])
+      matrix_eigfunc_2 = cbind(matrix_eigfunc_2,tmpPlot_eigfunc[,2])
+      matrix_eigfunc_3 = cbind(matrix_eigfunc_3,tmpPlot_eigfunc[,3])
+    }
+    tmp_meandiff = colMeans(mean_diff)
+    est_eigen_mean_diff = rbind(est_eigen_mean_diff,tmp_meandiff)
+    Plot_eigfunc_1 = c(Plot_eigfunc_1,list(matrix_eigfunc_1))
+    Plot_eigfunc_2 = c(Plot_eigfunc_2,list(matrix_eigfunc_2))
+    Plot_eigfunc_3 = c(Plot_eigfunc_3,list(matrix_eigfunc_3))
+    cov_list = c(cov_list,list(cov_dif))
+  }
+  plot_eigenfunc = list()
+  plot_eigenfunc$eigfun = c(list(Plot_eigfunc_1),list(Plot_eigfunc_2),list(Plot_eigfunc_3))
+  plot_eigenfunc$num_eigen =num_eigen
+  plot_eigenfunc$seq_t = seq_t
+  plot_eigenfunc$seq_y = seq_y
+  plot_eigenfunc$est_eigenvalue_diff = est_eigenvalue_diff
+  plot_eigenfunc$cov_dif = cov_list
+  plot_eigenfunc$est_eigen_mean_diff =est_eigen_mean_diff
+  return(plot_eigenfunc)
+}
