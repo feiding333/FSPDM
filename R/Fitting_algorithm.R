@@ -260,7 +260,8 @@ Estimate_Eigenfunction = function(est_beta,r,M1,Spline_func){
 }
 
 ## get the estimation of mean function
-get_mean_compare = function(mean_func,Spline_func,seq_t,seq_y,theta_est,othermodel = NULL){
+get_mean_compare = function(mean_func,Spline_func,theta_est,othermodel = NULL){
+  theta_est = list(theta_est)
   plotData = data.frame();
   seq_t = seq(tmin,tmax,length.out = 100)
   seq_y = seq(ymin,ymax,length.out = 12)
@@ -285,7 +286,6 @@ get_mean_compare = function(mean_func,Spline_func,seq_t,seq_y,theta_est,othermod
     ###
     est_mean = t(est_mean)
     est_mean = data.frame(est_mean)
-    print(est_mean)
     est_mean = melt(est_mean,measure.vars = colnames(est_mean))
 
     est_mean = summarySE(est_mean, measurevar="value", groupvars="variable")
