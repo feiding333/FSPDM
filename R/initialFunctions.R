@@ -77,30 +77,47 @@ get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cu
   return(resAndpre)
 }
 # use the least square method to get the initial value of beta
-Init_beta = function(resAndpre_list){
-  # get the dimension of the C matrix.
+# using least square to the the initial value of beta
+Init_beta = function(resAndpre_list,num_special){
   rownum = dim(resAndpre_list$est_C[[1]])[1]
   colnum = dim(resAndpre_list$est_C[[1]])[2]
   num_bin = length(resAndpre_list$est_C)
-  init_beta = c()
-  # construct the predictor and response of the least square method.
-  for (q in 1:colnum) {
-    for (p in 1:rownum) {
-      ly = c()
-      lx = resAndpre_list$predictor_d
-      print(num_bin)
-      for (i in 1:num_bin) {
-        tmpC = resAndpre_list$est_C[[i]]
-        ly = c(ly,tmpC[p,q])
-      }
-      print(dim(lx))
-      init_beta_pq = lm(formula =  ly ~ lx-1)
-      print(summary(init_beta_pq))
-      init_beta_pq = as.vector( init_beta_pq$coefficients)
-      init_beta = c(init_beta,init_beta_pq)
+  for (i in 2:num_bin) {
+    tmp_whole_C = resAndpre_list$est_C[[(i-1)]]
+    C_bin_i = resAndpre_list$est_C[[i]]
+    for (j in 1:colnum) {
+      fix_com = tmp_whole_C[,j]
+      com_eig = C_bin_i[,j]
+      if(sum(fix_com*com_eig) < 0) com_eig = -com_eig
+      resAndpre_list$est_C[[i]][,j] = com_eig
     }
   }
+  init_beta = c()
+  list_ly = list()
+  list_beta_pq = list()
+  max_maxtrix = matrix(0,rownum,colnum)
+  for (q in 1:colnum) {
+    for (p in 1:rownum) {
+      lx = resAndpre_list$predictor_d
+      ly = c()
+      for (i in 1:num_bin) {
+        tmpC = resAndpre_list$est_C[[i]][p,q]
+        ly = c(ly,tmpC)
+      }
 
-  return(init_beta)
+      init_beta_pq = lm(formula =  ly ~ lx-1)
+
+
+      init_beta_pq = as.vector( init_beta_pq$coefficients)
+      init_beta_pq[is.na(init_beta_pq)] = 0
+      init_beta = c(init_beta,init_beta_pq)
+      list_ly = c(list_ly,list(ly))
+      list_beta_pq = c(list_beta_pq,list(init_beta_pq))
+    }
+  }
+  init_result = list()
+  init_result$list_ly = list_ly
+  init_result$list_beta_pq = list_beta_pq
+  init_result$init_beta = init_beta
+  return(init_result)
 }
-
