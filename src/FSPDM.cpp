@@ -146,7 +146,6 @@ vec ObjGradient::gradient_beta(){
 // gradient theta
 vec ObjGradient::gradient_theta(){
   vec gtheta(u);
-  std::cout << "flag2"<< std::endl;
   vec vec_s = zeros<vec>(u);
   // *****
   mat tmpLn;
