@@ -58,7 +58,6 @@ get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cu
     optRank = Eig_num
     mfpcaModel = MFPCA_EstimateMLE(data_used, splineObj_t, optRank, mu2 = 0,
                                    controlList1, controlList2, sigmaSq = sigma2_cur)
-    print('mfpcaModel')
     print(mfpcaModel)
     Sigma_est = mfpcaModel$SFinal[[1]]%*%mfpcaModel$SFinal[[2]]%*%t(mfpcaModel$SFinal[[1]])
     eig_Sigme = eigen(Sigma_est)
