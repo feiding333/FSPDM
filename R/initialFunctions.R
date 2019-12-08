@@ -11,7 +11,8 @@ get_index_interval = function(y,num_bin){
 }
 
 # get the mediate variable C that is estimated by the mFPCA i.e. classical PCA method.
-get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin){
+get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cur,sigma2_cur){
+  H_in = Data_generated$H_in
   X_in = Data_generated$X_in
   t_in = Data_generated$t_in
   ni=Data_generated$ni
@@ -20,10 +21,15 @@ get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin){
   # using get_index_interval to get the index in each bin
   group_interval = get_index_interval(y = y,num_bin = num_bin)
   est_C = c()
+  eigen_init = c()
   predictor_d = matrix(0,num_bin,k)
+  eigenFunction_bin = c()
+  covariate_bin = c()
   for(i in 1:num_bin){
     index_used = group_interval[[i]]
     X_used = X_in[index_used]
+    H_used = H_in[index_used]
+    covariate_bin = c(covariate_bin,mean(y[index_used]))
     tmpd = splineObj_d$evalSpline(mean(y[index_used]))
     predictor_d[i,] = tmpd
     n = length(X_used)
@@ -35,7 +41,7 @@ get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin){
     obsT = c()
     obsY =c()
     for(tmpi in 1: n ){
-      tmpobs = X_used[[tmpi]]
+      tmpobs = X_used[[tmpi]]- H_used[[tmpi]]%*%theta_cur
       obsY = c(obsY,tmpobs)
       tmpt = t_used[[tmpi]]
       obsT = c(obsT,tmpt)
@@ -45,23 +51,29 @@ get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin){
     data_used = cbind(obsID,obsT,obsY)
     data_used = data.frame(data_used)
 
-    # set the parameters inorder to use the function: MFPCA_EstimateMLE
-    controlList1 = list(alpha = 2, tol = 1e-10, iterMax = 1000, sigma = 0.05)
-    controlList2 = list(alpha = 2, tol = 1e-10, sigma = 1e-2, beta = 1e-5,
-                        iterMax = 1000, verbose = 1)
-    optRank = 3
+    # set the parameters in order to use the function: MFPCA_EstimateMLE
+    controlList1 = list(alpha = 1, tol = 1e-8, iterMax = 100, sigma = 0.05)
+    controlList2 = list(alpha = 1e-2, tol = 1e-4, sigma = 1e-3, beta = 0.618,
+                        iterMax = 200, verbose = 1)
+    optRank = Eig_num
     mfpcaModel = MFPCA_EstimateMLE(data_used, splineObj_t, optRank, mu2 = 0,
-                                   controlList1, controlList2, sigmaSq = 0.01)
-
+                                   controlList1, controlList2, sigmaSq = sigma2_cur)
+    print('mfpcaModel')
+    print(mfpcaModel)
     Sigma_est = mfpcaModel$SFinal[[1]]%*%mfpcaModel$SFinal[[2]]%*%t(mfpcaModel$SFinal[[1]])
     eig_Sigme = eigen(Sigma_est)
-    tmp_est_C = eig_Sigme$vectors[,1:3] %*% diag(sqrt(eig_Sigme$values[1:3]))
+    tmp_est_C = eig_Sigme$vectors[,1:Eig_num] %*% diag(sqrt(eig_Sigme$values[1:Eig_num]))
+    tmpeigenFunctions =  mfpcaModel$eigenFunctions
+    eigenFunction_bin = c(eigenFunction_bin,list(tmpeigenFunctions))
     est_C = c(est_C,list(tmp_est_C))
+    eigen_init = c(eigen_init,list(mfpcaModel$eigenValues))
   }
   resAndpre = list()
   resAndpre$est_C = est_C
   resAndpre$predictor_d = predictor_d
-
+  resAndpre$eigenFunction_bin = eigenFunction_bin
+  resAndpre$covariate_bin = covariate_bin
+  resAndpre$eigen_init = eigen_init
   return(resAndpre)
 }
 # use the least square method to get the initial value of beta
