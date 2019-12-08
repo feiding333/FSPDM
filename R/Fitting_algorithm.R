@@ -387,7 +387,7 @@ plotcompare = function(plot_eigenfunc, Eigen_func,Eigen_Gen = NULL,selK = NULL){
       geom_line(aes(linetype = Curve))+geom_ribbon(aes(x = Time, y = X,ymin= X-ci,ymax=X+ci,linetype = Curve ),alpha=I(1/7))
     p = p + facet_wrap(.~covariate) + theme_bw() + scale_linetype_manual(values=c("twodash", "dotted","solid"))
 
-    p = p + scale_color_d3()+
+    p = p +
       scale_colour_manual(values = c("blue","purple","orange") )+
       theme(axis.title.x = element_text(size = 18),axis.title.y = element_text(size = 16),axis.text.y = element_text(size = 14),legend.position = c(0.925,0.88), legend.title = element_blank())+xlab("t")+ylab("f(t,z)")
 
