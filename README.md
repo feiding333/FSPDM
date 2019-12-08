@@ -9,3 +9,91 @@ To install the latest version from Github, use
 library(devtools)
 devtools::install_github("https://github.com/feiding333/FSPDM.git")
 ```
+
+## Usage
+```s
+## library our package
+library(FSPDM)
+## library require package
+library(ggplot2)
+library(reshape2)
+library(FSPDM)
+library(rOptManifold)
+library(mFPCA)
+library(rTensor)
+library(MASS)
+library(ggsci)
+# Example
+## Simulate Data
+load simulated data
+load('data/data')
+# construct the spline basis that used in our model
+tmin = 0 # the start point of the curve
+tmax = 1 # the end point of the curve, i.e. the cuvre's regin is from tmin to tmax
+ymin = 0 # the minimum of the covariates 
+ymax = 1 # the maximum of the covariate 
+num_bin = 20 # number of bin in initial steps of our algorithm
+# spline basis for t
+order = 4 # spline order
+nknots =8 # number of knots
+splineObj_t = new(orthoSpline,tmin,tmax,order,nknots)
+# degree freedom of spline basis
+M1 = splineObj_t$getDoF()
+## basis with respect to y to get the tensor product basis
+yknots = 3
+splineObj_y = new(orthoSpline,ymin,ymax,order,(yknots))
+# degree freedom of spline basis
+M2 = splineObj_y$getDoF()
+## basis with d that is in matrix C
+# basis with respect y (d^T), in C matrix
+dknots = 5
+splineObj_d = new(orthoSpline,ymin,ymax,order,dknots)
+# degree freedom of spline basis
+M3 = splineObj_d$getDoF()
+k = M3
+Spline_func = c(splineObj_t,splineObj_d,splineObj_y)
+## the the setting of algorithm
+## set the number of principle components
+Eig_num = r =  3
+## the the number of spline basis used
+## spline basis for t 
+M1 = 10
+## spline basis for covariate in mean function
+M2 = 5
+## spline basis for covariate in  covariate structure
+M3 = k = 7
+## set the start point of parameters(option)
+## the start point of theta
+theta = rep(0,M1*M2)
+## the start point of sigma2
+sigma2 = 0.01
+## the start point of beta
+beta = rep(0,r*M1*M3)
+
+## apply our FSPDM method to fit the model
+parameter_best = train_function (Data_generated = Data_generated,Eig_num = Eig_num,k = k, beta = beta,theta = theta,sigma2 = sigma2)
+## use the parameters to get the estimation of mean function 
+# construct true mean function and compare our method with true mean function
+mean_func = function(t,covariate){
+  return(30*(t - covariate)^2)
+}
+
+get_mean_compare(mean_func = mean_func,Spline_func = Spline_func,theta_est = parameter_best$theta)
+
+## use the parameters to get the estimation of eigenfunctions
+eigen_function_estimation = Estimate_Eigenfunction (est_beta = parameter_best$beta,r = r,M1 = M1,Spline_func = Spline_func)
+## construct the true eigenfunction and compare our eigenfunctions estimation to true eigenfunction
+  phi_1 = function(t,covariate){
+    return(cos(pi*(t+covariate))*sqrt(2))
+
+  }
+  phi_2 = function(t,covariate){
+    return(sin(pi*(t+covariate))*sqrt(2))
+
+  }
+  phi_3 = function(t,covariate){
+    return(cos(3*pi*(t-covariate))*sqrt(2))
+  }
+Eigen_func = c(phi_1,phi_2,phi_3)
+# compare the eigenfunction estimation of our method with true eigenfunctions
+plotcompare(plot_eigenfunc = eigen_function_estimation, Eigen_func = Eigen_func,selK = 3)
