@@ -1,5 +1,5 @@
 # write the function get_index_interval to divid the covariate into small bins.
-get_index_interval = function(y,num_bin){
+.get_index_interval = function(y,num_bin){
   cutinterval_inter = cut(y,breaks = num_bin,labels = FALSE)
   group_interval = list()
   # get the index of each bin
@@ -11,7 +11,7 @@ get_index_interval = function(y,num_bin){
 }
 
 # get the mediate variable C that is estimated by the mFPCA i.e. classical PCA method.
-get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cur,sigma2_cur){
+.get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cur,sigma2_cur){
   H_in = Data_generated$H_in
   X_in = Data_generated$X_in
   t_in = Data_generated$t_in
@@ -19,7 +19,7 @@ get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cu
   y = Data_generated$y
   k = splineObj_d$getDoF()
   # using get_index_interval to get the index in each bin
-  group_interval = get_index_interval(y = y,num_bin = num_bin)
+  group_interval = .get_index_interval(y = y,num_bin = num_bin)
   est_C = c()
   eigen_init = c()
   predictor_d = matrix(0,num_bin,k)
@@ -58,6 +58,7 @@ get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cu
     optRank = Eig_num
     mfpcaModel = MFPCA_EstimateMLE(data_used, splineObj_t, optRank, mu2 = 0,
                                    controlList1, controlList2, sigmaSq = sigma2_cur)
+    print('mfpcaModel')
     print(mfpcaModel)
     Sigma_est = mfpcaModel$SFinal[[1]]%*%mfpcaModel$SFinal[[2]]%*%t(mfpcaModel$SFinal[[1]])
     eig_Sigme = eigen(Sigma_est)
@@ -77,7 +78,7 @@ get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cu
 }
 # use the least square method to get the initial value of beta
 # using least square to the the initial value of beta
-Init_beta = function(resAndpre_list,num_special){
+.Init_beta = function(resAndpre_list,num_special){
   rownum = dim(resAndpre_list$est_C[[1]])[1]
   colnum = dim(resAndpre_list$est_C[[1]])[2]
   num_bin = length(resAndpre_list$est_C)

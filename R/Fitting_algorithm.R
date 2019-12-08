@@ -54,12 +54,12 @@ train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 =
     flag_convergence = 0
     inner = 1
     theta_old = theta_cur
-    theta_cur = update_theta(SPDMEstimation=SPDMEstimation,theta_cur)
+    theta_cur = .update_theta(SPDMEstimation=SPDMEstimation,theta_cur)
     error_theta = max(abs(theta_cur - theta_old))
     beta_last = NULL
     while (flag_convergence == 0) {
       beta_old = beta_cur
-      result_cur = update_beta(SPDMEstimation=SPDMEstimation,theta_cur = theta_cur,sigma2_cur = sigma2_cur,beta_last)
+      result_cur = .update_beta(SPDMEstimation=SPDMEstimation,theta_cur = theta_cur,sigma2_cur = sigma2_cur,beta_last)
       beta_cur = result_cur$beta_cur
       init_beta=result_cur$init_beta
       responseAndpre_used = result_cur$responseAndpre_used
@@ -68,7 +68,7 @@ train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 =
       sigma2_old = sigma2_cur
       if(is.null(sigma2_list)){
         try({
-          upsigma2_cur = update_upsigma2(SPDMEstimation=SPDMEstimation,upsigma2_cur)
+          upsigma2_cur = .update_upsigma2(SPDMEstimation=SPDMEstimation,upsigma2_cur)
           sigma2_cur = exp(upsigma2_cur)
         })
         if ('try-error' %in% class(upsigma2_cur)) {
@@ -87,7 +87,7 @@ train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 =
 
     theta_old = theta_cur
     try({
-      theta_cur = update_theta(SPDMEstimation=SPDMEstimation,theta_cur)
+      theta_cur = .update_theta(SPDMEstimation=SPDMEstimation,theta_cur)
       error_theta = max(abs(theta_cur - theta_old))
     })
     if ('try-error' %in% class(theta_cur)) {
@@ -110,7 +110,7 @@ train_function = function(Data_generated,Eig_num,k, beta,theta,sigma2, lambda1 =
 }
 
 ### update theta using the function exports from C code.
-update_theta = function(SPDMEstimation = SPDMEstimation,theta_cur){
+.update_theta = function(SPDMEstimation = SPDMEstimation,theta_cur){
   est_usepac = optim(theta_cur, SPDMEstimation$objfunc_with_theta,SPDMEstimation$grad_with_theta,
                      method = "BFGS",control = list(maxit = 1e6,reltol = 1e-35))
   theta_cur = est_usepac$par
@@ -121,13 +121,13 @@ update_theta = function(SPDMEstimation = SPDMEstimation,theta_cur){
 
 # update functions
 #### update beta parameters using the function exports from C code.
-update_beta = function(SPDMEstimation = SPDMEstimation,theta_cur,sigma2_cur,beta_last = NULL){
+.update_beta = function(SPDMEstimation = SPDMEstimation,theta_cur,sigma2_cur,beta_last = NULL){
   ## initial step when update beta
   if(!is.null(beta_last)){
     init_beta = beta_last
   }else{
-    responseAndpre_used = get_resAndpre(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cur,sigma2_cur)
-    init_beta = Init_beta(responseAndpre_used)
+    responseAndpre_used = .get_resAndpre(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cur,sigma2_cur)
+    init_beta = .Init_beta(responseAndpre_used)
     init_beta = init_beta$init_beta
   }
   ## using the function export from c code to update beta
@@ -143,7 +143,7 @@ update_beta = function(SPDMEstimation = SPDMEstimation,theta_cur,sigma2_cur,beta
   return(result_cur)
 }
 ### update sigma2 using the function exports from C code.
-update_sigma2 = function(SPDMEstimation= SPDMEstimation,sigma2_cur){
+.update_sigma2 = function(SPDMEstimation= SPDMEstimation,sigma2_cur){
   est_usepac = optim(sigma2_cur, SPDMEstimation$objfunc_with_sigma2,SPDMEstimation$grad_with_sigma2,
                      method = "BFGS",control = list(maxit = 1e6,reltol = 1e-35,abstol = 1e-30))
   sigma2_cur = est_usepac$par
@@ -151,7 +151,7 @@ update_sigma2 = function(SPDMEstimation= SPDMEstimation,sigma2_cur){
   return(sigma2_cur)
 }
 ### update upsigma2, i.e. exp(sigma2) ,using the function exports from C code.
-update_upsigma2 = function(SPDMEstimation=SPDMEstimation,upsigma2_cur){
+.update_upsigma2 = function(SPDMEstimation=SPDMEstimation,upsigma2_cur){
   est_usepac = optim(upsigma2_cur, SPDMEstimation$objfunc_with_upsigma2,SPDMEstimation$grad_with_upsigma2,
                      method = "BFGS",control = list(maxit = 1e6,reltol = 1e-35,abstol = 1e-30))
   upsigma2_cur = est_usepac$par
@@ -288,7 +288,7 @@ get_mean_compare = function(mean_func,Spline_func,theta_est,othermodel = NULL){
     est_mean = data.frame(est_mean)
     est_mean = melt(est_mean,measure.vars = colnames(est_mean))
 
-    est_mean = summarySE(est_mean, measurevar="value", groupvars="variable")
+    est_mean = .summarySE(est_mean, measurevar="value", groupvars="variable")
     fest_mean = est_mean$value
     ci_est = 2*est_mean$se
     ci_tru = 0
@@ -341,8 +341,8 @@ plotcompare = function(plot_eigenfunc, Eigen_func,Eigen_Gen = NULL,selK = NULL){
       tmpfSeqHat = melt(tmpfSeqHat,measure.vars = colnames(tmpfSeqHat))
       tmp_diff = melt(tmp_diff,measure.vars = colnames(tmp_diff))
 
-      tmpfSeqHat = summarySE(tmpfSeqHat, measurevar="value", groupvars="variable")
-      tmp_diff = summarySE(tmp_diff, measurevar="value", groupvars="variable")
+      tmpfSeqHat = .summarySE(tmpfSeqHat, measurevar="value", groupvars="variable")
+      tmp_diff = .summarySE(tmp_diff, measurevar="value", groupvars="variable")
       fSeqHat = tmpfSeqHat$value
       if(!is.null(Eigen_Gen)){
         fSeqGen = Eigen_Gen[,i]
@@ -387,7 +387,7 @@ plotcompare = function(plot_eigenfunc, Eigen_func,Eigen_Gen = NULL,selK = NULL){
       geom_line(aes(linetype = Curve))+geom_ribbon(aes(x = Time, y = X,ymin= X-ci,ymax=X+ci,linetype = Curve ),alpha=I(1/7))
     p = p + facet_wrap(.~covariate) + theme_bw() + scale_linetype_manual(values=c("twodash", "dotted","solid"))
 
-    p = p +
+    p = p + scale_color_d3()+
       scale_colour_manual(values = c("blue","purple","orange") )+
       theme(axis.title.x = element_text(size = 18),axis.title.y = element_text(size = 16),axis.text.y = element_text(size = 14),legend.position = c(0.925,0.88), legend.title = element_blank())+xlab("t")+ylab("f(t,z)")
 
@@ -406,7 +406,7 @@ plotcompare = function(plot_eigenfunc, Eigen_func,Eigen_Gen = NULL,selK = NULL){
 }
 
 # # function to summary the data in order to get the error bar
-summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+.summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
                       conf.interval=.95, .drop=TRUE) {
   library(plyr)
 
