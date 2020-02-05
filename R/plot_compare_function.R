@@ -41,7 +41,7 @@ pred_function = function(parameter_est,testIndexes){
 }
 
 # cv - tuning parameters
-cv_tuning = function(folds = 10,grid_lambda1,grid_lambda2,grid_lambda3,grid_lambda4,N){
+cv_tuning = function(Data_generated,Eig_num,k,beta,theta,sigma2,folds = 10,grid_lambda1,grid_lambda2,grid_lambda3,grid_lambda4,N){
   min__nag_log = Inf
   min_store  = c()
   fold_split <- cut(seq(1,N),breaks=folds,labels=FALSE)
@@ -57,7 +57,7 @@ cv_tuning = function(folds = 10,grid_lambda1,grid_lambda2,grid_lambda3,grid_lamb
           obj_store = c()
           for (i in 1:folds) {
             testIndexes <- which(fold_split==i,arr.ind=TRUE)
-            parameter_est = train_function(lambda1 = lambda1, lambda2 = lambda2,lambda3 = lambda3,lambda4=lambda4, testIndexes)
+            parameter_est = train_function(Data_generated= Data_generated,Eig_num = Eig_num,k = k, beta= beta,theta = theta, sigma2=sigma2,lambda1 = lambda1, lambda2 = lambda2,lambda3 = lambda3,lambda4=lambda4,testIndexes =  testIndexes)
             obj_store = c(obj_store,pred_function(parameter_est,testIndexes))
           }
           now_nag_log = mean(obj_store)
