@@ -41,7 +41,7 @@ pred_function = function(parameter_est,testIndexes){
 }
 
 # cv - tuning parameters
-cv_tuning = function(Data_generated,Eig_num,k,beta,theta,sigma2,folds = 10,grid_lambda1,grid_lambda2,grid_lambda3,grid_lambda4,N){
+cv_tuning = function(Data_generated,Eig_num,k,beta,theta,sigma2,folds = 10,grid_lambda1,grid_lambda2,grid_lambda3,grid_lambda4,N,sigma_list_flag = NULL){
   min__nag_log = Inf
   min_store  = c()
   fold_split <- cut(seq(1,N),breaks=folds,labels=FALSE)
@@ -57,7 +57,12 @@ cv_tuning = function(Data_generated,Eig_num,k,beta,theta,sigma2,folds = 10,grid_
           obj_store = c()
           for (i in 1:folds) {
             testIndexes <- which(fold_split==i,arr.ind=TRUE)
-            parameter_est = train_function(Data_generated= Data_generated,Eig_num = Eig_num,k = k, beta= beta,theta = theta, sigma2=sigma2,lambda1 = lambda1, lambda2 = lambda2,lambda3 = lambda3,lambda4=lambda4,testIndexes =  testIndexes)
+            if(is.null(sigma_list_flag)){
+              parameter_est = train_function(Data_generated= Data_generated,Eig_num = Eig_num,k = k, beta= beta,theta = theta, sigma2=sigma2,lambda1 = lambda1, lambda2 = lambda2,lambda3 = lambda3,lambda4=lambda4,testIndexes =  testIndexes)
+            }else{
+              parameter_est = train_function(Data_generated= Data_generated,Eig_num = Eig_num,k = k, beta= beta,theta = theta, sigma2=sigma2,lambda1 = lambda1, lambda2 = lambda2,lambda3 = lambda3,lambda4=lambda4,testIndexes =  testIndexes,sigma2_list =   Data_generated$sigma2list)
+
+            }
             obj_store = c(obj_store,pred_function(parameter_est,testIndexes))
           }
           now_nag_log = mean(obj_store)
