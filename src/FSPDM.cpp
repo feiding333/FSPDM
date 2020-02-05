@@ -43,7 +43,6 @@ double ObjGradient::objfunc(){
   if(sigma20 != 100000){
     for (int i = 0; i < N ; i++) {
       tmp_cholM = IdentityMr + pow(sigma2,-1) * (C.at(i).t()*BtB.at(i)*C.at(i));
-      //std::cout << "pow(sigma2,-1)="<< pow(sigma2,-1)  << std::endl;
       tmpgn = C.at(i).t()*(Btx.at(i) - BtH.at(i)*theta);
 
       // get F_n

@@ -527,6 +527,7 @@ loss_change_with_covariates_bin = function(Data_test,parameter_best_list,num_bin
 
     # get Gen's prediction
     if(!is.null(othermodel_rersult)){
+      Gen_train_results = othermodel_rersult
       gen_score_est = get_gen_score(Gen_train_results = othermodel_rersult,Data_test_score = train_score_data,Index_score = Index_score,repeat_num = tmpi)
       Gen_pred = get_gen_pred(Gen_train_results,gen_score_est,Index_pred = Index_pred,repeat_num = tmpi)
     }
@@ -986,8 +987,6 @@ get_score_data = function(Data_test,Index_score,sigma2flag = NULL){
 
 # get Gen's model score using small data
 get_gen_score = function(Gen_train_results,Data_test_score,Index_score,repeat_num = NULL){
-  print('Index_score')
-  print(Index_score)
   if(is.list(Gen_train_results$V)){
     r = dim(Gen_train_results$V[[repeat_num]][[1]])[2]
     se2 = Gen_train_results$se2[[repeat_num]][[1]]
@@ -1021,8 +1020,6 @@ get_gen_score = function(Gen_train_results,Data_test_score,Index_score,repeat_nu
 }
 # get gen's score cov
 get_gen_score_cov = function(Gen_train_results,r,repeat_num = NULL){
-  print('Index_score')
-  print(Index_score)
   if(is.list(Gen_train_results$V)){
     se2 = Gen_train_results$se2[[repeat_num]][[1]]
     Sf =  Gen_train_results$Sf[[repeat_num]][[1]]
