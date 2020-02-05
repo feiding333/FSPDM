@@ -9,7 +9,19 @@
   }
   return(group_interval)
 }
-
+# get_index_interval for loss function
+get_index_interval_loss = function(y,num_bin){
+    quantile1 = seq(0,1,length.out = (num_bin+1))
+    cutinterval_inter = cut(y,breaks = quantile(floor(min(y)):ceiling(max(y)),quantile1),labels = FALSE)
+    group_interval = list()
+    # get the index of each bin
+    for(i in 1:num_bin){
+        index_interval = which(cutinterval_inter == i )
+        group_interval = c(group_interval,list(index_interval))
+    }
+    
+    return(group_interval)
+}
 # get the mediate variable C that is estimated by the mFPCA i.e. classical PCA method.
 .get_resAndpre = function(Data_generated,splineObj_t,splineObj_d,num_bin,theta_cur,sigma2_cur){
   H_in = Data_generated$H_in
